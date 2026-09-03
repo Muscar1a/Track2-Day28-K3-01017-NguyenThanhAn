@@ -227,6 +227,10 @@ def seed(
             accepted[kind], rejected[kind] = [], []
             for row in selected:
                 response = client.post(f"/api/v1/{kind}", json=row)
+                if response.status_code == 429:
+                    import time
+                    time.sleep(1.0)
+                    response = client.post(f"/api/v1/{kind}", json=row)
                 target = accepted if response.status_code == 202 else rejected
                 target[kind].append(
                     response.json()

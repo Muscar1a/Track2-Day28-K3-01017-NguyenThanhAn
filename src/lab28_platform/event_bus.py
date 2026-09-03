@@ -254,7 +254,7 @@ class BatchConsumer:
         self._consumer.subscribe([self._topic])
 
     def poll_batch(
-        self, max_messages: int, *, idle_polls: int = 3, poll_timeout: float = 1.0
+        self, max_messages: int, *, idle_polls: int = 5, poll_timeout: float = 1.0
     ) -> tuple[list[ConsumedMessage], list[DeadLetterEnvelope]]:
         """Poll up to ``max_messages``.
 
@@ -270,7 +270,10 @@ class BatchConsumer:
         while len(decoded) + len(poison) < max_messages and idle < idle_polls:
             message = self._consumer.poll(poll_timeout)
             if message is None:
-                idle += 1
+                if self._consumer.assignment():
+                    idle += 1
+                else:
+                    idle += 0.5
                 continue
             if message.error():
                 error = message.error()
@@ -300,6 +303,7 @@ class BatchConsumer:
                 )
                 continue
 
+            idle = 0
             decoded.append(
                 ConsumedMessage(
                     event=event,
