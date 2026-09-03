@@ -50,11 +50,11 @@ services:
       KAFKA_NUM_PARTITIONS: 1
       KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
     healthcheck:
-      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:19092 --list"]
-      interval: 5s
-      timeout: 5s
+      test: ["CMD-SHELL", "nc -z localhost 19092 || /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:19092 --list"]
+      interval: 10s
+      timeout: 15s
       retries: 30
-      start_period: 15s
+      start_period: 20s
 
   kafka-exporter:
     image: danielqsj/kafka-exporter:v1.9.0
